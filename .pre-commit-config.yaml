@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: detect-private-key
+  - repo: local
+    hooks:
+      - id: commitlint
+        name: commitlint (Conventional Commits)
+        entry: bash -lc 'npx --yes @commitlint/cli --edit "$1"'
+        language: system
+        stages: [commit-msg]
