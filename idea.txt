@@ -1,0 +1,53 @@
+I put a complete, end-to-end spec in the canvas for you—architecture, configs, ML pipeline, risk engine, backtesting, ops, and deliverables. It’s written so you can implement it straight away, swap models/parameters easily, and stay inside Zerodha + NSE constraints.
+
+Here are the key broker + market facts the spec is built around (with sources):
+
+* **Zerodha (Kite Connect) limits & plumbing**
+
+  * WebSocket market data: subscribe to **up to 3000 instruments per connection**, and **up to 3 WebSocket connections per API key**. Modes: LTP / QUOTE / FULL (depth). ([Kite][1])
+  * Orders: **10 orders/sec**, **200 orders/min**, and a **hard cap of 3000 orders/day** per user/API key; **max 25 modifications per order** (then cancel-replace). ([Kite][2], [Zerodha Support][3])
+  * **Postbacks (webhooks)** are available for reliable order-status updates; use alongside periodic reconciliation. ([Kite][4])
+  * **Historical candles** API (minute→daily) for research/backtesting; use WebSocket to build your own intraday bars going forward. ([Kite][5])
+  * **Market quotes** REST snapshot endpoints support batching (up to **500 instruments** per call) for OHLC/LTP. ([Kite][6])
+  * **Instrument master** is available via the SDK (`instruments()`); cache token, tick size, freeze qty, etc., for mapping & validation. ([GitHub][7])
+  * **Access token flow:** login to get a `request_token`, exchange for `access_token`; token is **valid for the trading day** and typically **expires next morning \~07:00–07:30 IST** (plan a pre-market check). ([Kite][8])
+  * **Pricing:** Kite Connect for retail is **₹500/month per app** (realtime via WebSockets + historical API). ([Zerodha Support][9])
+
+* **NSE trading session (Equity)**
+
+  * **Normal market:** **09:15–15:30 IST** (pre-open 09:00–09:15; closing session 15:40–16:00). The bot spec blocks trading before 09:15 and squares off by \~15:20. ([NSE India][10])
+
+* **Regulatory context (2025)**
+
+  * SEBI introduced a framework (Feb 4, 2025) for safer retail algo usage: exchange-level approval/registration of algos, **unique tagging of algo orders**, auditability, and broker responsibilities. If/when your bot crosses certain activity thresholds, expect registration/approvals via your broker. ([Securities and Exchange Board of India][11], [Reuters][12])
+  * Coverage in business press notes **formal retail access under the new framework** (from Aug 1, 2025) with transparency and controls. (Work with your broker’s compliance team for any approvals/whitelisting you might need.) ([The Economic Times][13])
+
+### Quick start checklist (mapped to the spec)
+
+1. **Create a Kite Connect app** and subscribe (₹500/mo). Store API key/secret in a secret vault—never in plain YAML. ([Zerodha Support][9])
+2. **Daily pre-open:** generate/verify `access_token` after tokens refresh (\~07:30 IST), fetch fresh **instruments dump**, and warm up the model + caches. ([Kite][14])
+3. **Paper mode:** run with realtime WebSocket + a stubbed broker first; validate P\&L, slippage, postback lag, and your throttle. ([Kite][1])
+4. **Risk gates on:** daily loss cap, max exposure, freeze-qty/circuit checks, square-off at 15:20 IST, and order-rate headroom under broker limits. ([Kite][2], [NSE India][10])
+5. **Walk-forward deploy:** promote models only after out-of-sample and paper canary pass; capture **input features, decisions, and broker payloads** for each trade (auditability). ([Securities and Exchange Board of India][11])
+
+If you want, I can turn this into a ready-to-run **docker-compose** scaffold (with the config schema, throttle middleware, postback handler, and a backtester stub) so you can start plugging in your models.
+
+* [The Economic Times](https://economictimes.indiatimes.com/markets/stocks/news/indias-retail-traders-get-green-light-for-regulated-algo-trading/articleshow/123032053.cms?utm_source=chatgpt.com)
+* [Reuters](https://www.reuters.com/world/india/india-markets-regulator-sets-track-trace-rules-retail-investors-algo-trading-2025-02-04/?utm_source=chatgpt.com)
+
+**Note:** None of this is financial advice, and you’re responsible for complying with your broker’s terms and Indian regulations.
+
+[1]: https://kite.trade/docs/connect/v3/websocket/?utm_source=chatgpt.com "WebSocket streaming - Kite Connect 3 / API documentation"
+[2]: https://kite.trade/docs/connect/v3/exceptions/?utm_source=chatgpt.com "Exceptions and errors - Kite Connect 3 / API documentation"
+[3]: https://support.zerodha.com/category/trading-and-markets/alerts-and-nudges/kite-error-messages/articles/order-rate-limits-on-kite?utm_source=chatgpt.com "Why is the error 'Maximum allowed order requests ..."
+[4]: https://kite.trade/docs/connect/v3/postbacks/?utm_source=chatgpt.com "Postbacks / WebHooks - Kite Connect 3 / API documentation"
+[5]: https://kite.trade/docs/connect/v3/historical/?utm_source=chatgpt.com "Historical candle data - Kite Connect 3 / API documentation"
+[6]: https://kite.trade/docs/connect/v3/market-quotes/?utm_source=chatgpt.com "Market quotes and instruments - Kite Connect Trading APIs"
+[7]: https://github.com/zerodha/pykiteconnect/blob/master/kiteconnect/connect.py?utm_source=chatgpt.com "pykiteconnect/kiteconnect/connect.py at master"
+[8]: https://kite.trade/docs/connect/v3/user/?utm_source=chatgpt.com "User - Kite Connect 3 / API documentation"
+[9]: https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/what-are-the-charges-for-kite-apis?utm_source=chatgpt.com "What are the charges for Kite APIs?"
+[10]: https://www.nseindia.com/market-data/market-timings?utm_source=chatgpt.com "Market Timings"
+[11]: https://www.sebi.gov.in/legal/circulars/feb-2025/safer-participation-of-retail-investors-in-algorithmic-trading_91614.html?utm_source=chatgpt.com "Safer participation of retail investors in Algorithmic trading"
+[12]: https://www.reuters.com/world/india/india-markets-regulator-sets-track-trace-rules-retail-investors-algo-trading-2025-02-04/?utm_source=chatgpt.com "India markets regulator sets track and trace rules for retail investors' algo trading"
+[13]: https://economictimes.indiatimes.com/markets/stocks/news/indias-retail-traders-get-green-light-for-regulated-algo-trading/articleshow/123032053.cms?utm_source=chatgpt.com "India's retail traders gain formal access to algo trading under Sebi's new framework"
+[14]: https://kite.trade/forum/discussion/7759/access-token-validity?utm_source=chatgpt.com "Access Token Validity - Kite Connect developer forum"

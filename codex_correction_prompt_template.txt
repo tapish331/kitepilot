@@ -1,0 +1,231 @@
+{
+  "version": "1.0",
+  "emitted_from_state": "4",
+  "purpose": "Generate a single, self-contained correction patch for the current PR so that all checks pass and the branch can be merged.",
+  "templates": {
+    "ci_failures": {
+      "task_type": "ci_failures",
+      "repo": {
+        "name": "{{REPO_NAME}}",
+        "default_branch": "{{DEFAULT_BRANCH}}",
+        "pr_branch": "{{PR_BRANCH}}",
+        "language_stack": "{{LANGUAGES_AND_FRAMEWORKS}}",
+        "package_managers": "{{PACKAGE_MANAGERS}}",
+        "build_system": "{{BUILD_SYSTEM}}"
+      },
+      "ci_context": {
+        "provider": "{{CI_PROVIDER}}",
+        "workflow_files": ["{{PATH_TO_CI_FILE_1}}", "{{PATH_TO_CI_FILE_2}}"],
+        "failing_checks": ["{{CHECK_NAME_1}}", "{{CHECK_NAME_2}}"],
+        "logs_snippets": [
+          "```log\n{{FAILING_CHECK_1_LOG_SNIPPET}}\n```",
+          "```log\n{{FAILING_CHECK_2_LOG_SNIPPET}}\n```"
+        ],
+        "test_report_summary": "{{TEST_SUMMARY_TEXT}}",
+        "recent_diff_summary": "```diff\n{{RECENT_DIFF_UNIFIED}}\n```",
+        "runtime_environment": {
+          "os": "{{RUNNER_OS}}",
+          "arch": "{{RUNNER_ARCH}}",
+          "tool_versions": {
+            "node": "{{NODE_VERSION}}",
+            "python": "{{PYTHON_VERSION}}",
+            "java": "{{JAVA_VERSION}}",
+            "go": "{{GO_VERSION}}",
+            "other": "{{OTHER_TOOL_VERSIONS}}"
+          }
+        }
+      },
+      "constraints": {
+        "api_stability_requirements": "{{PUBLIC_API_COMPAT_REQUIREMENTS}}",
+        "coding_standards": "{{CODING_STANDARDS_OR_LINTERS}}",
+        "formatters": "{{FORMATTERS_AND_CONFIG}}",
+        "forbidden_changes": [
+          "Introducing breaking public API changes without adapters",
+          "Hardcoding secrets or tokens",
+          "Disabling tests instead of fixing root cause",
+          "Editing CI caches manually in code"
+        ],
+        "allowed_scopes": [
+          "Only modify files necessary to fix the failures",
+          "Update config files if misconfiguration is the root cause"
+        ]
+      },
+      "instructions_for_model": [
+        "Diagnose each failing check using the logs and code diff.",
+        "Propose minimal, targeted code/config changes to fix root causes.",
+        "Prefer deterministic fixes over flakiness retries; if a test is flaky, deflake it (timeouts, non-determinism, ordering).",
+        "Maintain backward compatibility and existing public APIs unless explicitly allowed.",
+        "Keep changes small and well-documented in the commit message."
+      ],
+      "artifacts_to_produce": {
+        "patch": "Unified diff that applies cleanly to {{PR_BRANCH}}.",
+        "commit_message": "Conventional Commit style including 'Fix CI:' scope and root-cause summary.",
+        "post_change_validation": {
+          "expected_local_commands": [
+            "{{BUILD_CMD}}",
+            "{{TEST_CMD}}",
+            "{{LINT_CMD}}"
+          ],
+          "expected_ci_outcome": "All listed checks turn green."
+        }
+      },
+      "acceptance_criteria": [
+        "All CI checks listed in 'failing_checks' pass.",
+        "No new failing tests; overall test count unchanged unless adding missing tests.",
+        "Linters/formatters pass.",
+        "No secrets added; no unrelated refactors."
+      ],
+      "output_contract": {
+        "format": "Return ONLY a JSON object with keys: 'patch', 'commit_message', 'notes'.",
+        "patch_requirements": "Patch must be a valid unified diff with file paths relative to repo root.",
+        "notes_usage": "Brief rationale and any follow-up for maintainers."
+      }
+    },
+    "merge_conflicts": {
+      "task_type": "merge_conflicts",
+      "repo": {
+        "name": "{{REPO_NAME}}",
+        "default_branch": "{{DEFAULT_BRANCH}}",
+        "pr_branch": "{{PR_BRANCH}}",
+        "merge_base": "{{MERGE_BASE_SHA}}"
+      },
+      "conflict_context": {
+        "conflicted_files": ["{{FILE_PATH_1}}", "{{FILE_PATH_2}}"],
+        "conflict_hunks": [
+          "```diff\n{{CONFLICT_MARKERS_FROM_FILE_1}}\n```",
+          "```diff\n{{CONFLICT_MARKERS_FROM_FILE_2}}\n```"
+        ],
+        "intent": "Favor a semantic merge that preserves both bug fixes and new features.",
+        "build_commands": ["{{BUILD_CMD}}"],
+        "test_commands": ["{{TEST_CMD}}"],
+        "domain_guidance": "{{ANY_BUSINESS_RULES_ON_PREFERENCE}}"
+      },
+      "merge_strategy_preferences": [
+        "Prefer code from {{PREFERRED_SIDE: 'ours'|'theirs'}} when changes are orthogonal.",
+        "If both sides modify the same API, unify into a backward-compatible version.",
+        "Re-run local formatting and imports organization after resolving."
+      ],
+      "instructions_for_model": [
+        "Resolve all conflict markers <<<<<<<, =======, >>>>>>>.",
+        "Integrate both sides’ intent; do not silently drop logic, comments, or tests.",
+        "Add or update tests to cover merged behavior when necessary.",
+        "Ensure the project builds and tests pass post-merge."
+      ],
+      "artifacts_to_produce": {
+        "patch": "Unified diff removing all conflict markers and compiling.",
+        "commit_message": "Conventional Commit: 'merge: resolve conflicts with {{DEFAULT_BRANCH}}' plus per-file notes.",
+        "post_change_validation": {
+          "expected_local_commands": ["{{BUILD_CMD}}", "{{TEST_CMD}}", "{{LINT_CMD}}"]
+        }
+      },
+      "acceptance_criteria": [
+        "No conflict markers remain in the repo.",
+        "Build succeeds; tests and linters pass.",
+        "Merged code preserves both sides’ critical logic."
+      ],
+      "output_contract": {
+        "format": "Return ONLY a JSON object with keys: 'patch', 'commit_message', 'notes'."
+      }
+    },
+    "checks_not_running": {
+      "task_type": "checks_not_running",
+      "repo": {
+        "name": "{{REPO_NAME}}",
+        "default_branch": "{{DEFAULT_BRANCH}}",
+        "pr_branch": "{{PR_BRANCH}}"
+      },
+      "ci_context": {
+        "provider": "{{CI_PROVIDER}}",
+        "symptoms": [
+          "Required checks show as 'Expected — Waiting for status to be reported'",
+          "No jobs triggered for this PR/commit"
+        ],
+        "observations": {
+          "ci_config_files_present": ["{{PATH_TO_CI_FILE_1}}", "{{PATH_TO_CI_FILE_2}}"],
+          "ci_config_contents": [
+            "```yaml\n{{CI_FILE_1_CONTENTS_OR_RELEVANT_SNIPPET}}\n```"
+          ],
+          "branch_protection_requirements": [
+            "{{REQUIRED_CHECK_NAME_1}}",
+            "{{REQUIRED_CHECK_NAME_2}}"
+          ],
+          "recent_repo_changes": "```diff\n{{RECENT_DIFF_UNIFIED}}\n```"
+        }
+      },
+      "diagnostic_goals": [
+        "Ensure CI workflow names and 'on:' triggers match PR events (e.g., pull_request, pull_request_target, push).",
+        "Ensure required checks exactly match job names produced by workflows.",
+        "Ensure path filters and 'if:' conditions are not unintentionally skipping jobs.",
+        "Ensure permissions, concurrency, and conditions allow running on forks if applicable."
+      ],
+      "instructions_for_model": [
+        "Edit CI configuration to correctly trigger checks for PRs against {{DEFAULT_BRANCH}}.",
+        "Align job names with branch protection required checks or update workflow to emit those names.",
+        "Fix YAML/schema errors or invalid syntax.",
+        "If workflows require tokens/permissions, request minimal changes to scopes (document in notes) but DO NOT add secrets."
+      ],
+      "artifacts_to_produce": {
+        "patch": "Unified diff updating CI config and any necessary scripts.",
+        "commit_message": "Conventional Commit: 'ci: ensure required checks run on PRs' with details on triggers and job names.",
+        "post_change_validation": {
+          "local_static_validation": [
+            "YAML lint passes for CI files",
+            "Workflow syntax validates (e.g., 'act' locally if available; otherwise static checks)"
+          ],
+          "expected_ci_outcome": "New push to {{PR_BRANCH}} triggers required checks."
+        }
+      },
+      "acceptance_criteria": [
+        "CI workflows run on new commits/PR events.",
+        "Required checks appear and report status.",
+        "No over-broad permissions or secrets added."
+      ],
+      "output_contract": {
+        "format": "Return ONLY a JSON object with keys: 'patch', 'commit_message', 'notes'."
+      }
+    }
+  },
+  "shared_sections": {
+    "placeholders_to_fill_before_paste": [
+      "REPO_NAME",
+      "DEFAULT_BRANCH",
+      "PR_BRANCH",
+      "CI_PROVIDER",
+      "PATH_TO_CI_FILE_*",
+      "CHECK_NAME_*",
+      "BUILD_CMD",
+      "TEST_CMD",
+      "LINT_CMD",
+      "RECENT_DIFF_UNIFIED",
+      "FAILING_CHECK_*_LOG_SNIPPET",
+      "CONFLICT_MARKERS_FROM_FILE_*",
+      "LANGUAGES_AND_FRAMEWORKS",
+      "PACKAGE_MANAGERS",
+      "BUILD_SYSTEM",
+      "PUBLIC_API_COMPAT_REQUIREMENTS",
+      "CODING_STANDARDS_OR_LINTERS",
+      "FORMATTERS_AND_CONFIG",
+      "RUNNER_OS",
+      "RUNNER_ARCH",
+      "NODE_VERSION",
+      "PYTHON_VERSION",
+      "JAVA_VERSION",
+      "GO_VERSION",
+      "OTHER_TOOL_VERSIONS",
+      "MERGE_BASE_SHA",
+      "REQUIRED_CHECK_NAME_*"
+    ],
+    "guardrails_for_model": [
+      "Do not include prose outside the JSON output_contract.",
+      "Do not suggest manual dashboard actions; only code/Config changes expressible in a patch.",
+      "Do not add or modify secrets; if needed, add TODO in notes.",
+      "Keep diffs minimal and focused; avoid drive-by refactors."
+    ],
+    "commit_message_conventions": "Conventional Commits (e.g., 'fix:', 'ci:', 'test:', 'merge:').",
+    "definition_of_done": [
+      "Patch applies cleanly to {{PR_BRANCH}}.",
+      "All CI checks pass or are correctly triggered and complete.",
+      "No unresolved conflict markers; formatters/linters pass."
+    ]
+  }
+}

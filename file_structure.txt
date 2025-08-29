@@ -1,0 +1,424 @@
+{
+"repo": "kitepilot",
+"state": 2,
+"provenance": \[
+"Derived from your coding questionnaire and solution blueprint. ",
+"Aligned with the architecture/spec I summarized earlier. "
+],
+"type": "monorepo",
+"structure": \[
+{
+"path": ".github",
+"kind": "dir",
+"desc": "CI/CD, PR templates, code ownership",
+"children": \[
+{
+"path": ".github/workflows",
+"kind": "dir",
+"children": \[
+{ "path": "ci.yml", "kind": "file", "desc": "Orchestrates full pipeline on PR/push" },
+{ "path": "backend.yml", "kind": "file", "desc": "Lint/typecheck/tests for Python services" },
+{ "path": "frontend.yml", "kind": "file", "desc": "Lint/tests/build for Next.js" },
+{ "path": "security.yml", "kind": "file", "desc": "Bandit, Semgrep, dependency audit" },
+{ "path": "release.yml", "kind": "file", "desc": "Version bump & changelog on tag" }
+]
+},
+{
+"path": ".github/ISSUE\_TEMPLATE",
+"kind": "dir",
+"children": \[
+{ "path": "bug\_report.md", "kind": "file" },
+{ "path": "feature\_request.md", "kind": "file" }
+]
+},
+{ "path": ".github/PULL\_REQUEST\_TEMPLATE.md", "kind": "file" },
+{ "path": ".github/CODEOWNERS", "kind": "file" }
+]
+},
+{
+"path": "apps",
+"kind": "dir",
+"desc": "Deployable applications/services",
+"children": \[
+{
+"path": "apps/api",
+"kind": "dir",
+"desc": "FastAPI control plane & REST/OpenAPI",
+"children": \[
+{
+"path": "kitepilot\_api",
+"kind": "dir",
+"children": \[
+{ "path": "**init**.py", "kind": "file" },
+{ "path": "main.py", "kind": "file", "desc": "FastAPI app factory & router mount" },
+{ "path": "config.py", "kind": "file", "desc": "Pydantic settings; hot-reload hooks" },
+{ "path": "deps", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" } ] },
+{
+"path": "routers",
+"kind": "dir",
+"children": \[
+{ "path": "health.py", "kind": "file" },
+{ "path": "status.py", "kind": "file" },
+{ "path": "instruments.py", "kind": "file" },
+{ "path": "candles.py", "kind": "file" },
+{ "path": "positions.py", "kind": "file" },
+{ "path": "orders.py", "kind": "file" },
+{ "path": "fills.py", "kind": "file" },
+{ "path": "signals.py", "kind": "file" },
+{ "path": "broker\_postbacks.py", "kind": "file" },
+{ "path": "metrics.py", "kind": "file", "desc": "Prometheus exporter" }
+]
+},
+{
+"path": "adapters",
+"kind": "dir",
+"children": \[
+{
+"path": "zerodha",
+"kind": "dir",
+"desc": "Kite Connect integration",
+"children": \[
+{ "path": "**init**.py", "kind": "file" },
+{ "path": "session.py", "kind": "file", "desc": "Access token flow, persistence" },
+{ "path": "kite\_client.py", "kind": "file", "desc": "REST client wrapper + rate limits" },
+{ "path": "websocket.py", "kind": "file", "desc": "Market data streaming client" },
+{ "path": "postbacks.py", "kind": "file", "desc": "Webhook signature/handler" }
+]
+}
+]
+},
+{
+"path": "services",
+"kind": "dir",
+"children": \[
+{ "path": "risk", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "limits.py", "kind": "file" }, { "path": "checker.py", "kind": "file" }, { "path": "throttle.py", "kind": "file" } ] },
+{ "path": "strategy", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "loader.py", "kind": "file" }, { "path": "ensemble.py", "kind": "file" }, { "path": "position\_sizing.py", "kind": "file" } ] },
+{ "path": "md", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "aggregator.py", "kind": "file" }, { "path": "symbol\_map.py", "kind": "file" } ] },
+{ "path": "feature\_store", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "online.py", "kind": "file" }, { "path": "offline.py", "kind": "file" } ] },
+{ "path": "backtest", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "engine.py", "kind": "file" }, { "path": "fills.py", "kind": "file" }, { "path": "fees.py", "kind": "file" }, { "path": "slippage.py", "kind": "file" }, { "path": "reports.py", "kind": "file" } ] },
+{ "path": "exec", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "router.py", "kind": "file" }, { "path": "idempotency.py", "kind": "file" } ] }
+]
+},
+{
+"path": "db",
+"kind": "dir",
+"children": \[
+{ "path": "base.py", "kind": "file" },
+{ "path": "session.py", "kind": "file" },
+{ "path": "models.py", "kind": "file", "desc": "SQLAlchemy models" },
+{ "path": "migrations", "kind": "dir", "children": \[ { "path": "versions", "kind": "dir" } ] }
+]
+},
+{
+"path": "telemetry",
+"kind": "dir",
+"children": \[
+{ "path": "logging.py", "kind": "file" },
+{ "path": "tracing.py", "kind": "file" },
+{ "path": "sentry.py", "kind": "file" }
+]
+},
+{ "path": "utils", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "time.py", "kind": "file" }, { "path": "errors.py", "kind": "file" } ] }
+]
+},
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "alembic.ini", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": ".env.sample", "kind": "file" },
+{ "path": "tests", "kind": "dir", "children": \[ { "path": "unit", "kind": "dir" }, { "path": "integration", "kind": "dir" }, { "path": "contract", "kind": "dir" } ] }
+]
+},
+{
+"path": "apps/web",
+"kind": "dir",
+"desc": "Next.js dashboard (read-only ops UI)",
+"children": \[
+{ "path": "app", "kind": "dir", "children": \[ { "path": "page.tsx", "kind": "file" }, { "path": "(routes)", "kind": "dir", "children": \[ { "path": "pnl/page.tsx", "kind": "file" }, { "path": "orders/page.tsx", "kind": "file" }, { "path": "alerts/page.tsx", "kind": "file" } ] } ] },
+{ "path": "components", "kind": "dir" },
+{ "path": "lib", "kind": "dir", "children": \[ { "path": "api.ts", "kind": "file" }, { "path": "sentry.client.ts", "kind": "file" } ] },
+{ "path": "public", "kind": "dir" },
+{ "path": "styles", "kind": "dir" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": "package.json", "kind": "file" },
+{ "path": "pnpm-lock.yaml", "kind": "file" },
+{ "path": "tsconfig.json", "kind": "file" },
+{ "path": "next.config.mjs", "kind": "file" },
+{ "path": ".env.local.example", "kind": "file" },
+{ "path": "tests", "kind": "dir", "children": \[ { "path": "unit", "kind": "dir" }, { "path": "e2e", "kind": "dir", "children": \[ { "path": "playwright.config.ts", "kind": "file" } ] } ] }
+]
+},
+{
+"path": "apps/md-gateway",
+"kind": "dir",
+"desc": "Market data WS client + bar aggregator",
+"children": \[
+{ "path": "src", "kind": "dir", "children": \[ { "path": "main.py", "kind": "file" }, { "path": "ws\_client.py", "kind": "file" }, { "path": "aggregator.py", "kind": "file" }, { "path": "symbol\_map.py", "kind": "file" }, { "path": "healthcheck.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": "tests", "kind": "dir" }
+]
+},
+{
+"path": "apps/strategy-svc",
+"kind": "dir",
+"desc": "ML inference & signal generation",
+"children": \[
+{ "path": "src", "kind": "dir", "children": \[ { "path": "main.py", "kind": "file" }, { "path": "loader.py", "kind": "file" }, { "path": "ensemble.py", "kind": "file" }, { "path": "models", "kind": "dir", "children": \[ { "path": "xgb\_model.py", "kind": "file" }, { "path": "lgbm\_model.py", "kind": "file" }, { "path": "torch\_model.py", "kind": "file" } ] }, { "path": "calibrators", "kind": "dir" }, { "path": "position\_sizing.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": "tests", "kind": "dir" }
+]
+},
+{
+"path": "apps/risk-svc",
+"kind": "dir",
+"desc": "Pre-trade checks & throttling",
+"children": \[
+{ "path": "src", "kind": "dir", "children": \[ { "path": "main.py", "kind": "file" }, { "path": "limits.py", "kind": "file" }, { "path": "checker.py", "kind": "file" }, { "path": "throttle.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": "tests", "kind": "dir" }
+]
+},
+{
+"path": "apps/broker-svc",
+"kind": "dir",
+"desc": "Order placement/modify/cancel + reconciliation",
+"children": \[
+{ "path": "src", "kind": "dir", "children": \[ { "path": "main.py", "kind": "file" }, { "path": "router.py", "kind": "file" }, { "path": "zerodha\_client.py", "kind": "file" }, { "path": "idempotency.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": "tests", "kind": "dir" }
+]
+},
+{
+"path": "apps/backtester",
+"kind": "dir",
+"desc": "Event-driven backtest/simulator",
+"children": \[
+{ "path": "src", "kind": "dir", "children": \[ { "path": "main.py", "kind": "file" }, { "path": "engine.py", "kind": "file" }, { "path": "simulator.py", "kind": "file" }, { "path": "fee\_models.py", "kind": "file" }, { "path": "slippage\_models.py", "kind": "file" }, { "path": "reports.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" },
+{ "path": "tests", "kind": "dir" }
+]
+},
+{
+"path": "apps/worker",
+"kind": "dir",
+"desc": "Schedulers & maintenance jobs",
+"children": \[
+{ "path": "src", "kind": "dir", "children": \[ { "path": "scheduler.py", "kind": "file" }, { "path": "reconcilers.py", "kind": "file" }, { "path": "eod\_pack.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "Dockerfile", "kind": "file" }
+]
+}
+]
+},
+{
+"path": "packages",
+"kind": "dir",
+"desc": "Shared libraries (Python & TS)",
+"children": \[
+{
+"path": "packages/common",
+"kind": "dir",
+"children": \[
+{ "path": "kitepilot\_common", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "types.py", "kind": "file" }, { "path": "enums.py", "kind": "file" }, { "path": "config.py", "kind": "file" }, { "path": "errors.py", "kind": "file" }, { "path": "time.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "README.md", "kind": "file" }
+]
+},
+{
+"path": "packages/strategy-kit",
+"kind": "dir",
+"children": \[
+{ "path": "kitepilot\_strategy", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "base.py", "kind": "file" }, { "path": "interfaces.py", "kind": "file" }, { "path": "registry.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" },
+{ "path": "README.md", "kind": "file" }
+]
+},
+{
+"path": "packages/broker-adapter",
+"kind": "dir",
+"children": \[
+{ "path": "kitepilot\_broker", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "base.py", "kind": "file" }, { "path": "zerodha", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "client.py", "kind": "file" }, { "path": "models.py", "kind": "file" } ] } ] },
+{ "path": "pyproject.toml", "kind": "file" }
+]
+},
+{
+"path": "packages/feature-lib",
+"kind": "dir",
+"children": \[
+{ "path": "kitepilot\_features", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "price.py", "kind": "file" }, { "path": "microstructure.py", "kind": "file" }, { "path": "volatility.py", "kind": "file" }, { "path": "seasonality.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" }
+]
+},
+{
+"path": "packages/risk-lib",
+"kind": "dir",
+"children": \[
+{ "path": "kitepilot\_risk", "kind": "dir", "children": \[ { "path": "**init**.py", "kind": "file" }, { "path": "rules.py", "kind": "file" }, { "path": "policy.py", "kind": "file" } ] },
+{ "path": "pyproject.toml", "kind": "file" }
+]
+}
+]
+},
+{
+"path": "config",
+"kind": "dir",
+"desc": "Single source of truth runtime config",
+"children": \[
+{ "path": "config.schema.json", "kind": "file" },
+{ "path": "default.yaml", "kind": "file" },
+{ "path": "dev.yaml", "kind": "file" },
+{ "path": "staging.yaml", "kind": "file" },
+{ "path": "prod.yaml", "kind": "file" }
+]
+},
+{
+"path": "deployment",
+"kind": "dir",
+"desc": "Container & (optional) K8s",
+"children": \[
+{
+"path": "deployment/docker",
+"kind": "dir",
+"children": \[
+{ "path": "docker-compose.yml", "kind": "file" },
+{ "path": "compose.dev.yml", "kind": "file" },
+{ "path": "compose.paper.yml", "kind": "file" }
+]
+},
+{
+"path": "deployment/k8s",
+"kind": "dir",
+"children": \[
+{ "path": "api.yaml", "kind": "file" },
+{ "path": "web.yaml", "kind": "file" },
+{ "path": "md-gateway.yaml", "kind": "file" },
+{ "path": "strategy-svc.yaml", "kind": "file" },
+{ "path": "risk-svc.yaml", "kind": "file" },
+{ "path": "broker-svc.yaml", "kind": "file" },
+{ "path": "backtester.yaml", "kind": "file" },
+{ "path": "configmap.yaml", "kind": "file" },
+{ "path": "secret.yaml", "kind": "file" },
+{ "path": "ingress.yaml", "kind": "file" }
+]
+},
+{ "path": "deployment/nginx/nginx.conf", "kind": "file" }
+]
+},
+{
+"path": "infra",
+"kind": "dir",
+"desc": "Observability & optional cloud IaC",
+"children": \[
+{
+"path": "infra/prometheus",
+"kind": "dir",
+"children": \[ { "path": "prometheus.yml", "kind": "file" } ]
+},
+{
+"path": "infra/grafana",
+"kind": "dir",
+"children": \[
+{ "path": "dashboards", "kind": "dir", "children": \[ { "path": "live.json", "kind": "file" }, { "path": "research.json", "kind": "file" } ] }
+]
+},
+{ "path": "infra/loki/config.yaml", "kind": "file" },
+{ "path": "infra/terraform/aws", "kind": "dir" }
+]
+},
+{
+"path": "data",
+"kind": "dir",
+"desc": "Local dev data lake (avoid committing large files)",
+"children": \[
+{ "path": "instruments", "kind": "dir" },
+{ "path": "candles", "kind": "dir" },
+{ "path": "ticks", "kind": "dir" },
+{ "path": "features", "kind": "dir" },
+{ "path": "models", "kind": "dir" }
+]
+},
+{
+"path": "research",
+"kind": "dir",
+"desc": "Notebooks & experiments",
+"children": \[
+{ "path": "notebooks", "kind": "dir" },
+{ "path": "datasets", "kind": "dir" },
+{ "path": "experiments", "kind": "dir" },
+{ "path": "optuna\_studies", "kind": "dir" },
+{ "path": "README.md", "kind": "file" }
+]
+},
+{
+"path": "docs",
+"kind": "dir",
+"desc": "Docusaurus documentation site",
+"children": \[
+{ "path": "docusaurus.config.ts", "kind": "file" },
+{ "path": "sidebars.ts", "kind": "file" },
+{ "path": "static", "kind": "dir" },
+{
+"path": "guide",
+"kind": "dir",
+"children": \[
+{ "path": "00-overview\.md", "kind": "file" },
+{ "path": "10-architecture.md", "kind": "file" },
+{ "path": "20-setup.md", "kind": "file" },
+{ "path": "30-risk-matrix.md", "kind": "file" },
+{ "path": "40-strategy-sdk.md", "kind": "file" },
+{ "path": "50-api.md", "kind": "file" },
+{ "path": "60-operations.md", "kind": "file" },
+{ "path": "70-troubleshooting.md", "kind": "file" }
+]
+}
+]
+},
+{
+"path": "openapi",
+"kind": "dir",
+"children": \[ { "path": "kitepilot.yaml", "kind": "file", "desc": "API contract (generated/checked in CI)" } ]
+},
+{
+"path": "scripts",
+"kind": "dir",
+"desc": "Dev & ops helpers",
+"children": \[
+{ "path": "bootstrap.sh", "kind": "file" },
+{ "path": "seed\_data.py", "kind": "file" },
+{ "path": "backfill\_candles.py", "kind": "file" },
+{ "path": "token\_login\_cli.py", "kind": "file" },
+{ "path": "generate\_daily\_pack.py", "kind": "file" }
+]
+},
+{
+"path": "db",
+"kind": "dir",
+"children": \[
+{ "path": "postgres/init.sql", "kind": "file" },
+{ "path": "clickhouse/migrations.sql", "kind": "file" }
+]
+},
+{ "path": "Makefile", "kind": "file", "desc": "make bootstrap|up|test|backtest|paper|live|daily-pack" },
+{ "path": "turbo.json", "kind": "file", "desc": "Turborepo pipeline for monorepo" },
+{ "path": "package.json", "kind": "file", "desc": "Workspace root (pnpm)" },
+{ "path": "pnpm-workspace.yaml", "kind": "file" },
+{ "path": ".env.sample", "kind": "file" },
+{ "path": ".gitignore", "kind": "file" },
+{ "path": ".dockerignore", "kind": "file" },
+{ "path": ".editorconfig", "kind": "file" },
+{ "path": ".pre-commit-config.yaml", "kind": "file" },
+{ "path": ".ruff.toml", "kind": "file" },
+{ "path": "mypy.ini", "kind": "file" },
+{ "path": "bandit.yaml", "kind": "file" },
+{ "path": "commitlint.config.cjs", "kind": "file" },
+{ "path": "README.md", "kind": "file" },
+{ "path": "CONTRIBUTING.md", "kind": "file" },
+{ "path": "SECURITY.md", "kind": "file" },
+{ "path": "LICENSE", "kind": "file" },
+{ "path": "CHANGELOG.md", "kind": "file" }
+]
+}

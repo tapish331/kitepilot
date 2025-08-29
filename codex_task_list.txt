@@ -1,0 +1,700 @@
+{
+"repo": "kitepilot",
+"provenance": \[
+"Tasks are derived from your questionnaire/spec and file-structure blueprint to reach an end-to-end, single-user Zerodha-Kite NSE intraday bot (research → backtest → live). ",
+"Sequencing aligns with the monorepo layout and service boundaries previously defined. ",
+"Risk controls, broker integration, market timings, and auditability reflect the implementation blueprint you approved. "
+],
+"tasks": \[
+{
+"id": "T01",
+"title": "Bootstrap monorepo & workspace plumbing",
+"rationale": "Create the skeleton all later tasks build on.",
+"prerequisites": \[],
+"changes": \[
+"package.json (pnpm workspaces)",
+"pnpm-workspace.yaml",
+"turbo.json",
+".editorconfig",
+".gitignore",
+".dockerignore",
+"README.md",
+"LICENSE",
+"CHANGELOG.md",
+".pre-commit-config.yaml",
+"commitlint.config.cjs"
+],
+"implementation\_steps": \[
+"Initialize pnpm workspace and Turborepo.",
+"Add shared scripts: lint, format, test, typecheck, build.",
+"Configure Conventional Commits + commitlint + pre-commit hooks."
+],
+"tests": \[
+"Run `pnpm -w -s -r run build` (should no-op but succeed).",
+"Pre-commit runs without errors on an empty commit."
+],
+"ci\_checks\_required": \[
+"format\_check",
+"license\_check"
+],
+"done\_criteria": "Repo installs cleanly with pnpm; CI scaffold passes on empty build. "
+},
+{
+"id": "T02",
+"title": "Root CI (GitHub Actions) and PR hygiene",
+"rationale": "Guarantee code quality from the first PR.",
+"prerequisites": \["T01"],
+"changes": \[
+".github/workflows/ci.yml",
+".github/workflows/security.yml",
+".github/PULL\_REQUEST\_TEMPLATE.md",
+".github/CODEOWNERS",
+".github/ISSUE\_TEMPLATE/bug\_report.md",
+".github/ISSUE\_TEMPLATE/feature\_request.md"
+],
+"implementation\_steps": \[
+"Add CI matrix (Python 3.11, Node 20) with cache.",
+"Wire jobs: lint, typecheck, tests (placeholder), vulnerability scan (pip/audit & npm audit).",
+"Require status checks on PR."
+],
+"tests": \[
+"Open a test PR; verify all jobs run and pass."
+],
+"ci\_checks\_required": \[
+"lint",
+"typecheck",
+"build",
+"vulnerability\_scan"
+],
+"done\_criteria": "Green CI on the empty skeleton with required checks enforced. "
+},
+{
+"id": "T03",
+"title": "apps/api FastAPI service scaffold",
+"rationale": "Control plane and REST/SSE lives here.",
+"prerequisites": \["T02"],
+"changes": \[
+"apps/api/pyproject.toml",
+"apps/api/Dockerfile",
+"apps/api/.env.sample",
+"apps/api/kitepilot\_api/main.py",
+"apps/api/kitepilot\_api/config.py",
+"apps/api/kitepilot\_api/routers/health.py",
+"apps/api/tests/unit/test\_health.py"
+],
+"implementation\_steps": \[
+"Create FastAPI app factory, mount /health and /status.",
+"Expose OpenAPI; set up uvicorn entrypoint.",
+"Add Ruff+Black+mypy config."
+],
+"tests": \[
+"pytest unit tests for /health returning 200.",
+"mypy typecheck passes."
+],
+"ci\_checks\_required": \[
+"lint",
+"typecheck",
+"unit\_tests",
+"build"
+],
+"done\_criteria": "Docker image builds; /health returns 200 locally. "
+},
+{
+"id": "T04",
+"title": "Database layer: Postgres + SQLAlchemy + Alembic",
+"rationale": "Persistent orders/fills/audit and reference data.",
+"prerequisites": \["T03"],
+"changes": \[
+"apps/api/kitepilot\_api/db/base.py",
+"apps/api/kitepilot\_api/db/session.py",
+"apps/api/kitepilot\_api/db/models.py",
+"apps/api/alembic.ini",
+"apps/api/kitepilot\_api/db/migrations/versions/0001\_init.py",
+"db/postgres/init.sql"
+],
+"implementation\_steps": \[
+"Define core entities (Instrument, Order, Fill, Position, Run, AuditEvent) minimal columns.",
+"Create Alembic migration & Makefile target.",
+"Wire DB URL from env."
+],
+"tests": \[
+"Testcontainers spins Postgres; migration up/down succeeds."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "Migrations apply cleanly in CI container. "
+},
+{
+"id": "T05",
+"title": "packages/common shared types & config schema",
+"rationale": "Single source for types, errors, time utils.",
+"prerequisites": \["T04"],
+"changes": \[
+"packages/common/pyproject.toml",
+"packages/common/kitepilot\_common/**init**.py",
+"packages/common/kitepilot\_common/types.py",
+"packages/common/kitepilot\_common/enums.py",
+"packages/common/kitepilot\_common/config.py",
+"packages/common/kitepilot\_common/errors.py",
+"config/config.schema.json"
+],
+"implementation\_steps": \[
+"Pydantic models for Signals, OrderIntent, OrderState, Fees, Limits.",
+"Schema validators; IST/UTC dual-stamp helpers."
+],
+"tests": \[
+"Round-trip (json ⇄ model) tests; timezone tests."
+],
+"ci\_checks\_required": \[
+"unit\_tests"
+],
+"done\_criteria": "Common package publishes locally and is importable. "
+},
+{
+"id": "T06",
+"title": "apps/md-gateway WebSocket tick ingest & 1s/1m bar aggregator (sim mode)",
+"rationale": "Foundation for research & live loops.",
+"prerequisites": \["T05"],
+"changes": \[
+"apps/md-gateway/pyproject.toml",
+"apps/md-gateway/src/main.py",
+"apps/md-gateway/src/ws\_client.py",
+"apps/md-gateway/src/aggregator.py",
+"apps/md-gateway/src/symbol\_map.py",
+"apps/md-gateway/src/healthcheck.py",
+"apps/md-gateway/tests/"
+],
+"implementation\_steps": \[
+"Implement synthetic tick generator and bar aggregation.",
+"Emit bars to stdout or NATS stub (disabled)."
+],
+"tests": \[
+"Deterministic bar aggregation golden-file tests."
+],
+"ci\_checks\_required": \[
+"unit\_tests"
+],
+"done\_criteria": "Generates correct 1s/1m bars from synthetic ticks. "
+},
+{
+"id": "T07",
+"title": "packages/feature-lib with price/microstructure/volatility features",
+"rationale": "Consistent features for backtest & live.",
+"prerequisites": \["T06"],
+"changes": \[
+"packages/feature-lib/pyproject.toml",
+"packages/feature-lib/kitepilot\_features/{**init**.py,price.py,microstructure.py,volatility.py,seasonality.py}",
+"packages/feature-lib/tests/"
+],
+"implementation\_steps": \[
+"Implement rolling returns, VWAP bands, order-book imbalance (interfaces for FULL vs QUOTE).",
+"Unit tests on toy series."
+],
+"tests": \[
+"Feature parity tests vs pandas reference."
+],
+"ci\_checks\_required": \[
+"unit\_tests"
+],
+"done\_criteria": "Features compute within p95 < 10ms per bar. "
+},
+{
+"id": "T08",
+"title": "packages/strategy-kit interfaces + registry + example strategy",
+"rationale": "Plug-and-play strategies with strict contracts.",
+"prerequisites": \["T07"],
+"changes": \[
+"packages/strategy-kit/pyproject.toml",
+"packages/strategy-kit/kitepilot\_strategy/{**init**.py,interfaces.py,base.py,registry.py}",
+"packages/strategy-kit/tests/",
+"apps/strategy-svc/src/models/xgb\_model.py (stub)",
+"apps/strategy-svc/src/position\_sizing.py (stub)"
+],
+"implementation\_steps": \[
+"Define Strategy interface (infer, warmup, horizon).",
+"Add VWAP mean-reversion sample (no ML).",
+"Registry allows loading by id from config."
+],
+"tests": \[
+"Contract tests ensure strategies return Signal objects."
+],
+"ci\_checks\_required": \[
+"unit\_tests"
+],
+"done\_criteria": "Example strategy returns deterministic signals on fixture bars. "
+},
+{
+"id": "T09",
+"title": "apps/strategy-svc service scaffold & signal pipeline",
+"rationale": "Turns bars+features into trade intents.",
+"prerequisites": \["T08"],
+"changes": \[
+"apps/strategy-svc/pyproject.toml",
+"apps/strategy-svc/Dockerfile",
+"apps/strategy-svc/src/{main.py,loader.py,ensemble.py,position\_sizing.py}",
+"apps/strategy-svc/tests/"
+],
+"implementation\_steps": \[
+"Load strategy from registry; compute features; create Signal and OrderIntent (paper).",
+"Expose health/metrics."
+],
+"tests": \[
+"Given deterministic bars, intents match snapshot."
+],
+"ci\_checks\_required": \[
+"unit\_tests",
+"integration\_tests"
+],
+"done\_criteria": "Service emits OrderIntents to stdout/log (transport stubbed). "
+},
+{
+"id": "T10",
+"title": "packages/risk-lib + apps/risk-svc (limits, throttle, square-off)",
+"rationale": "Safety gates before any order hits broker.",
+"prerequisites": \["T09"],
+"changes": \[
+"packages/risk-lib/pyproject.toml",
+"packages/risk-lib/kitepilot\_risk/{**init**.py,rules.py,policy.py}",
+"apps/risk-svc/pyproject.toml",
+"apps/risk-svc/src/{main.py,limits.py,checker.py,throttle.py}",
+"config/default.yaml (risk caps, squareoff\_time)"
+],
+"implementation\_steps": \[
+"Hard caps: daily loss, exposure, qty, per-trade risk; soft caps: spread/depth.",
+"Square-off window enforcement."
+],
+"tests": \[
+"Property-based tests for monotonicity of blocks.",
+"Time-window tests for square-off."
+],
+"ci\_checks\_required": \[
+"unit\_tests",
+"integration\_tests"
+],
+"done\_criteria": "Risk checker deterministically blocks/permits intents per config. "
+},
+{
+"id": "T11",
+"title": "packages/broker-adapter base + Zerodha client skeleton",
+"rationale": "Single interface for place/modify/cancel and postbacks.",
+"prerequisites": \["T10"],
+"changes": \[
+"packages/broker-adapter/pyproject.toml",
+"packages/broker-adapter/kitepilot\_broker/{**init**.py,base.py}",
+"packages/broker-adapter/kitepilot\_broker/zerodha/{**init**.py,models.py,client.py}",
+"apps/broker-svc/src/{main.py,router.py,idempotency.py,zerodha\_client.py}"
+],
+"implementation\_steps": \[
+"Define idempotent order API; add in-memory idempotency store.",
+"Stub Zerodha calls; map internal → broker fields."
+],
+"tests": \[
+"Contract tests for order mapping and idempotency keys."
+],
+"ci\_checks\_required": \[
+"unit\_tests",
+"contract"
+],
+"done\_criteria": "Broker adapter passes contract tests (sim). "
+},
+{
+"id": "T12",
+"title": "Internal event bus and message contracts",
+"rationale": "Wire services together predictably.",
+"prerequisites": \["T11"],
+"changes": \[
+"packages/common/kitepilot\_common/types.py (Bus message DTOs)",
+"config/default.yaml (bus: nats|inproc)",
+"apps/\* integrate simple in-proc bus (first pass)"
+],
+"implementation\_steps": \[
+"For MVP, implement in-process bus interfaces to unblock E2E; leave NATS hooks."
+],
+"tests": \[
+"End-to-end in-proc flow from bars → intents → broker stub."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "In-proc bus delivers messages across services in one process mode. "
+},
+{
+"id": "T13",
+"title": "apps/backtester event-driven engine (fees/slippage/reports)",
+"rationale": "Research parity with live logic.",
+"prerequisites": \["T12"],
+"changes": \[
+"apps/backtester/pyproject.toml",
+"apps/backtester/src/{main.py,engine.py,simulator.py,fee\_models.py,slippage\_models.py,reports.py}",
+"apps/backtester/tests/"
+],
+"implementation\_steps": \[
+"Implement event loop mirroring live; fee & slippage from config.",
+"Generate equity curve, turnover, drawdown reports."
+],
+"tests": \[
+"Deterministic replay of synthetic dataset matches expected metrics."
+],
+"ci\_checks\_required": \[
+"unit\_tests",
+"integration\_tests"
+],
+"done\_criteria": "Backtests produce reproducible P\&L with reports. "
+},
+{
+"id": "T14",
+"title": "apps/worker schedulers (market calendar, EOD pack, reconciliation)",
+"rationale": "Ops glue to keep state consistent.",
+"prerequisites": \["T13"],
+"changes": \[
+"apps/worker/pyproject.toml",
+"apps/worker/src/{scheduler.py,reconcilers.py,eod\_pack.py}",
+"scripts/generate\_daily\_pack.py"
+],
+"implementation\_steps": \[
+"Implement market-day bootstrap and EOD flatten/snapshots.",
+"Reconcile orders/fills/positions hourly."
+],
+"tests": \[
+"Replay a day and verify EOD pack contains orders/fills/logs."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "Daily pack artifact ZIP generated with required artefacts. "
+},
+{
+"id": "T15",
+"title": "apps/web Next.js dashboard (P\&L, orders, alerts)",
+"rationale": "Human oversight & observability.",
+"prerequisites": \["T14"],
+"changes": \[
+"apps/web/package.json",
+"apps/web/app/page.tsx",
+"apps/web/app/(routes)/{pnl,orders,alerts}/page.tsx",
+"apps/web/lib/api.ts",
+"apps/web/tests/"
+],
+"implementation\_steps": \[
+"Read-only UI pulling from API endpoints & SSE stream.",
+"Basic charts/tables; no mutations."
+],
+"tests": \[
+"Playwright e2e for P\&L and orders pages rendering mock data."
+],
+"ci\_checks\_required": \[
+"e2e\_tests"
+],
+"done\_criteria": "UI shows live mock P\&L/Orders/Alerts. "
+},
+{
+"id": "T16",
+"title": "Observability: Prometheus, Grafana dashboards, Loki logs, Sentry",
+"rationale": "Operate safely during market hours.",
+"prerequisites": \["T15"],
+"changes": \[
+"infra/prometheus/prometheus.yml",
+"infra/grafana/dashboards/{live.json,research.json}",
+"infra/loki/config.yaml",
+"apps/\* telemetry exporters",
+"apps/web/lib/sentry.client.ts"
+],
+"implementation\_steps": \[
+"Expose /metrics in API and services; compose Grafana panels.",
+"Wire Sentry DSN from env."
+],
+"tests": \[
+"Prometheus scrape succeeds; dashboards load sample data."
+],
+"ci\_checks\_required": \[
+"build"
+],
+"done\_criteria": "Dashboards render; Sentry captures a test exception. "
+},
+{
+"id": "T17",
+"title": "Docker Compose for local stack (paper mode)",
+"rationale": "One command to bring up the system.",
+"prerequisites": \["T16"],
+"changes": \[
+"deployment/docker/docker-compose.yml",
+"deployment/docker/compose.dev.yml",
+"deployment/docker/compose.paper.yml",
+"Makefile targets (up, paper, down)"
+],
+"implementation\_steps": \[
+"Services: Postgres, NATS (or in-proc), API, md-gateway, strategy-svc, risk-svc, broker-svc (paper), web, Prom+Grafana+Loki."
+],
+"tests": \[
+"`make paper` yields healthy containers; UI reachable; /health green."
+],
+"ci\_checks\_required": \[
+"build"
+],
+"done\_criteria": "End-to-end paper stack boots and streams mock data. "
+},
+{
+"id": "T18",
+"title": "Instrument master ingest & watchlist config",
+"rationale": "Real symbols and token mapping.",
+"prerequisites": \["T17"],
+"changes": \[
+"apps/api/kitepilot\_api/routers/instruments.py",
+"scripts/backfill\_candles.py",
+"data/instruments/ (gitignored)"
+],
+"implementation\_steps": \[
+"Add endpoints to list/import instruments; persist to DB.",
+"Symbol resolver service and watchlist loader."
+],
+"tests": \[
+"Resolver returns correct instrument\_token for sample symbols."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "Instrument table populated; watchlist returns valid tokens. "
+},
+{
+"id": "T19",
+"title": "Backtest runner CLI + report artifacts",
+"rationale": "Validate strategies before live.",
+"prerequisites": \["T18"],
+"changes": \[
+"apps/backtester/src/main.py (CLI commands)",
+"research/experiments/",
+"Makefile backtest target"
+],
+"implementation\_steps": \[
+"Run walk-forward on sample dataset; write CSV/HTML reports."
+],
+"tests": \[
+"Golden backtest metrics for example strategy."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "CLI produces equity curve & stats files deterministically. "
+},
+{
+"id": "T20",
+"title": "Paper trading E2E: bars → signals → risk → paper orders → positions/P\&L",
+"rationale": "Prove the full loop without broker.",
+"prerequisites": \["T19"],
+"changes": \[
+"apps/broker-svc/src/router.py (paper fills)",
+"apps/api/kitepilot\_api/routers/{orders.py,fills.py,positions.py}",
+"apps/api/kitepilot\_api/routers/signals.py"
+],
+"implementation\_steps": \[
+"Implement paper fill model (spread × k + slippage\_bps).",
+"Compute mark-to-market P\&L; expose SSE /live."
+],
+"tests": \[
+"End-to-end scenario test compares to backtest on same data."
+],
+"ci\_checks\_required": \[
+"e2e\_tests"
+],
+"done\_criteria": "UI shows live paper P\&L; parity with backtest within tolerance. "
+},
+{
+"id": "T21",
+"title": "Zerodha session flow CLI and secrets wiring",
+"rationale": "Enable real auth while keeping secrets safe.",
+"prerequisites": \["T20"],
+"changes": \[
+"scripts/token\_login\_cli.py",
+"apps/api/kitepilot\_api/adapters/zerodha/session.py",
+"config/dev.yaml (placeholders)"
+],
+"implementation\_steps": \[
+"Implement request\_token → access\_token; store securely (local dev: keyring or .env).",
+"Pre-market token freshness check."
+],
+"tests": \[
+"Mocked client unit tests for token exchange and expiry logic."
+],
+"ci\_checks\_required": \[
+"unit\_tests",
+"security"
+],
+"done\_criteria": "CLI obtains and validates token (mocked in CI). "
+},
+{
+"id": "T22",
+"title": "Real-time market data via Kite WebSocket (QUOTE mode) behind feature flag",
+"rationale": "Switch from synthetic to broker feed safely.",
+"prerequisites": \["T21"],
+"changes": \[
+"apps/md-gateway/src/ws\_client.py (Kite WS client)",
+"config/dev.yaml (market\_data.mode=QUOTE)",
+"apps/md-gateway/src/aggregator.py (productionize)"
+],
+"implementation\_steps": \[
+"Connect, subscribe to watchlist tokens, normalize ticks, recover on reconnect.",
+"Fallback to synthetic when flag off."
+],
+"tests": \[
+"Offline fixtures from captured WS frames; parser unit tests."
+],
+"ci\_checks\_required": \[
+"unit\_tests"
+],
+"done\_criteria": "Gateway streams real ticks locally when creds present. "
+},
+{
+"id": "T23",
+"title": "Order placement (LIVE-GUARDED) + postbacks receiver",
+"rationale": "Enable real orders under strict risk gates.",
+"prerequisites": \["T22"],
+"changes": \[
+"apps/broker-svc/src/zerodha\_client.py (real REST calls with rate-limiters)",
+"apps/api/kitepilot\_api/routers/broker\_postbacks.py",
+"config/dev.yaml (live\_guard=false by default)"
+],
+"implementation\_steps": \[
+"Implement place/modify/cancel mapping; token-bucket throttling.",
+"Expose webhook for postbacks; reconcile on lag."
+],
+"tests": \[
+"Contract tests with mocked HTTP; idempotency stress tests."
+],
+"ci\_checks\_required": \[
+"contract",
+"security"
+],
+"done\_criteria": "With live\_guard=true and risk caps, a small LIMIT order flows to broker in dev; otherwise disabled. "
+},
+{
+"id": "T24",
+"title": "Risk hard-stops, daily loss kill-switch, and square-off automation",
+"rationale": "Mandatory protections for live.",
+"prerequisites": \["T23"],
+"changes": \[
+"apps/risk-svc/src/limits.py",
+"apps/worker/src/scheduler.py (auto square-off 15:20 IST)",
+"config/prod.yaml (risk caps)"
+],
+"implementation\_steps": \[
+"Track realized+unrealized P\&L; halt trading and flatten on breach.",
+"Enforce trading window (09:15–15:30)."
+],
+"tests": \[
+"Simulate drawdown breach and observe HALT and flatten.",
+"Timebound tests for market hours."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "HALT reliably cancels open orders & flattens; square-off executes. "
+},
+{
+"id": "T25",
+"title": "Docs site and runbooks (Docusaurus)",
+"rationale": "Operational clarity and compliance auditability.",
+"prerequisites": \["T24"],
+"changes": \[
+"docs/docusaurus.config.ts",
+"docs/guide/{00-overview\.md,10-architecture.md,20-setup.md,30-risk-matrix.md,40-strategy-sdk.md,50-api.md,60-operations.md,70-troubleshooting.md}"
+],
+"implementation\_steps": \[
+"Document OTP/token flow, risk matrix, runbooks for reconnects, rate-limit errors, EOD pack."
+],
+"tests": \[
+"Build docs; link-checker passes."
+],
+"ci\_checks\_required": \[
+"build"
+],
+"done\_criteria": "Docs build clean and cover runbooks & API. "
+},
+{
+"id": "T26",
+"title": "Security hardening & supply-chain checks",
+"rationale": "Reduce production risk.",
+"prerequisites": \["T25"],
+"changes": \[
+".github/workflows/security.yml (Bandit, Semgrep, Trivy/Grype)",
+"bandit.yaml",
+"Semgrep ruleset",
+"Snyk/GH Dependabot config (optional)"
+],
+"implementation\_steps": \[
+"Scan Docker images and dependencies; fail on high severity."
+],
+"tests": \[
+"Intentionally add a vulnerable dependency in a branch and assert CI fails."
+],
+"ci\_checks\_required": \[
+"vulnerability\_scan",
+"security"
+],
+"done\_criteria": "CI blocks high severity vulns by default. "
+},
+{
+"id": "T27",
+"title": "NATS (or Redis Streams) event bus production toggle",
+"rationale": "Scale beyond in-proc and isolate failures.",
+"prerequisites": \["T26"],
+"changes": \[
+"deployment/docker/docker-compose.yml (+nats)",
+"apps/\* swap in-proc bus for NATS publisher/subscriber",
+"config/{dev,staging,prod}.yaml (bus=nats)"
+],
+"implementation\_steps": \[
+"Define subjects: ticks, bars, signals, order\_intents, orders, fills, alerts.",
+"Ensure idempotent consumers."
+],
+"tests": \[
+"Chaos tests for dropped connections; at-least-once delivery verified."
+],
+"ci\_checks\_required": \[
+"integration\_tests"
+],
+"done\_criteria": "Services communicate over NATS reliably in docker-compose. "
+},
+{
+"id": "T28",
+"title": "Acceptance tests (paper + guarded live dry-run)",
+"rationale": "Prove readiness against acceptance criteria.",
+"prerequisites": \["T27"],
+"changes": \[
+"apps/api/tests/e2e/test\_acceptance.py",
+"Makefile target: make acceptance"
+],
+"implementation\_steps": \[
+"Scenario: run a session in paper mode end-to-end; assert KPIs.",
+"Optional dry-run live with tiny qty under live\_guard."
+],
+"tests": \[
+"Acceptance suite passes locally and in CI nightly."
+],
+"ci\_checks\_required": \[
+"e2e\_tests"
+],
+"done\_criteria": "Acceptance suite green; artifacts archived. "
+},
+{
+"id": "T29",
+"title": "Release automation (tags → version bump → changelog → images)",
+"rationale": "Ship reproducible builds.",
+"prerequisites": \["T28"],
+"changes": \[
+".github/workflows/release.yml",
+"scripts/release\_changelog.sh"
+],
+"implementation\_steps": \[
+"On semver tag: compute versions, build/push images, publish GitHub Release with changelog."
+],
+"tests": \[
+"Dry-run a pre-release tag and verify artifacts."
+],
+"ci\_checks\_required": \[
+"build"
+],
+"done\_criteria": "Tagging v0.x produces images and a release with notes. "
+}
+]
+}
