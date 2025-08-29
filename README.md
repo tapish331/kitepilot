@@ -1,2 +1,14 @@
 # kitepilot
-KitePilot is a single-user NSE intraday trading bot for Zerodha (Kite Connect): ML signals (XGBoost/LightGBM/PyTorch), event-driven backtests, live execution with postbacks, strict risk limits (daily loss/exposure/square-off), full audit trail, dashboards (Prometheus/Grafana), Dockerized FastAPI + Next.js.
+
+Single-user Zerodha/Kite NSE intraday ML trading bot — monorepo scaffold (pnpm + Turborepo). This workspace will host FastAPI services, a Next.js ops UI, research/backtests, and infra.
+
+## Quickstart
+
+```bash
+pnpm -w i
+pre-commit install --install-hooks
+pnpm -w run format
+pnpm -w run build
+```
+
+> Conventional Commits enforced via commit-msg hook (pre-commit + commitlint).

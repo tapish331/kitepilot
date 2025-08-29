@@ -1,0 +1,24 @@
+{
+  "name": "kitepilot-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "turbo run build --no-daemon || echo \"no packages to build\"",
+    "test": "turbo run test --no-daemon || echo \"no tests\"",
+    "lint": "turbo run lint --no-daemon || echo \"no linters\"",
+    "typecheck": "turbo run typecheck --no-daemon || echo \"no typechecks\"",
+    "format": "prettier -w .",
+    "ci": "pnpm -w run lint && pnpm -w run typecheck && pnpm -w run test && pnpm -w run build"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "prettier": "^3.3.3",
+    "turbo": "^2.0.6"
+  },
+  "packageManager": "pnpm@10.5.2"
+}
