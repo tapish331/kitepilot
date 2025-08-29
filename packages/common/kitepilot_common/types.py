@@ -69,3 +69,48 @@ class OrderState(BaseModel):
     status: OrderStatus = OrderStatus.NEW
     filled_qty: int = 0
     avg_price: Optional[Decimal] = None
+
+
+class Tick(BaseModel):
+    """Market data tick."""
+
+    ts_utc: datetime
+    instrument: str
+    last_price: Decimal
+    bid: Optional[Decimal] = None
+    ask: Optional[Decimal] = None
+    qty: int = 0
+
+    @field_validator("ts_utc")
+    @classmethod
+    def ensure_aware(cls, v: datetime) -> datetime:
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+
+
+class BarBase(BaseModel):
+    """Common OHLCV bar fields."""
+
+    instrument: str
+    start_utc: datetime
+    end_utc: datetime
+    open: Decimal
+    high: Decimal
+    low: Decimal
+    close: Decimal
+    volume: int = 0
+    trades: int = 0
+    last_ts_utc: datetime
+
+    @field_validator("start_utc", "end_utc", "last_ts_utc")
+    @classmethod
+    def ensure_aware(cls, v: datetime) -> datetime:
+        return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+
+
+class Bar1S(BarBase):
+    """One-second OHLCV bar."""
+
+
+class Bar1M(BarBase):
+    """One-minute OHLCV bar."""
+

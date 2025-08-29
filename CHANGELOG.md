@@ -9,3 +9,9 @@ The format is based on Keep a Changelog, and this project adheres to Conventiona
 ### Added
 
 - Initial monorepo scaffold.
+
+## [0.1.0] - 2025-08-29
+
+### Added
+
+- md-gateway app with simulated ticks and 1s/1m bar aggregation.
