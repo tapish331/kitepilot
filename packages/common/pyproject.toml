@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kitepilot-common"
+version = "0.1.0"
+description = "Shared types, enums, errors, and config schema for Kitepilot"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name="Kitepilot"}]
+license = { text = "Apache-2.0" }
+keywords = ["trading", "fastapi", "pydantic", "types"]
+dependencies = [
+  "pydantic>=2.7,<3",
+  "typing-extensions>=4.10",
+  "pytz>=2024.1"
+]
+
+[tool.hatch.build]
+packages = ["kitepilot_common"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["kitepilot_common"]

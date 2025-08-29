@@ -1,0 +1,55 @@
+{
+  "properties": {
+    "env": {
+      "default": "dev",
+      "enum": [
+        "dev",
+        "staging",
+        "prod"
+      ],
+      "title": "Env",
+      "type": "string"
+    },
+    "log_level": {
+      "default": "INFO",
+      "enum": [
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR"
+      ],
+      "title": "Log Level",
+      "type": "string"
+    },
+    "timezone": {
+      "default": "UTC",
+      "title": "Timezone",
+      "type": "string"
+    },
+    "app_name": {
+      "default": "kitepilot",
+      "title": "App Name",
+      "type": "string"
+    },
+    "version": {
+      "default": "0.1.0",
+      "title": "Version",
+      "type": "string"
+    },
+    "database_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional DB URL for consumers",
+      "title": "Database Url"
+    }
+  },
+  "title": "Settings",
+  "type": "object"
+}
