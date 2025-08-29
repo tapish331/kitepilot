@@ -12,3 +12,11 @@ pnpm -w run build
 ```
 
 > Conventional Commits enforced via commit-msg hook (pre-commit + commitlint).
+
+## md-gateway
+
+Deterministic synthetic market data for development:
+
+```bash
+python -m apps.md_gateway.src.main --mode sim --symbols TCS,INFY --seed 42 --seconds 5
+```

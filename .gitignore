@@ -4,10 +4,13 @@ node_modules/
 dist/
 build/
 .DS_Store
+.artifacts/
 .env*
 !apps/api/.env.sample
+!apps/md_gateway/.env.sample
 .venv/
 __pycache__/
+.egg-info/
 .pytest_cache/
 .coverage*
 .idea/

@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md-gateway"
+version = "0.0.1"
+description = "Synthetic tick generator and bar aggregator"
+requires-python = ">=3.11"
+dependencies = [
+  "kitepilot-common>=0.1.0",
+  "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "mypy>=1.10",
+  "ruff>=0.5",
+  "black>=24.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "auto"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["apps.md_gateway.src"]
