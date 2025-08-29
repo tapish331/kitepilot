@@ -5,6 +5,7 @@ dist/
 build/
 .DS_Store
 .env*
+!apps/api/.env.sample
 .venv/
 __pycache__/
 .pytest_cache/
