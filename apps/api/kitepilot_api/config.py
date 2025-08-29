@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     ENV: str = "dev"
     APP_NAME: str = "KitePilot API"
     DOCS_ENABLED: bool = True
-    HOST: str = "0.0.0.0"
+    HOST: str = "127.0.0.1"
     PORT: int = 8000
 
     model_config = SettingsConfigDict(env_file=".env")
