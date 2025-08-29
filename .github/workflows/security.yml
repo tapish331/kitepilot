@@ -1,0 +1,36 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+        continue-on-error: true
+  bandit:
+    name: bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install bandit
+        run: pip install bandit
+      - name: Run bandit (skip if no Python files)
+        run: |
+          if [ -z "$(git ls-files '*.py')" ]; then
+            echo 'No Python files; skipping bandit.'
+          else
+            bandit -q -r .
+          fi
