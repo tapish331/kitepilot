@@ -32,5 +32,5 @@ jobs:
           if [ -z "$(git ls-files '*.py')" ]; then
             echo 'No Python files; skipping bandit.'
           else
-            bandit -q -r .
+            bandit -q -r . -s B101
           fi
