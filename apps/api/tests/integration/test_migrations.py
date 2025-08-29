@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
@@ -21,6 +22,10 @@ def postgres_url():
 def run_alembic(url: str, cmd: str) -> None:
     cfg = Config(ALEMBIC_INI)
     cfg.set_main_option("sqlalchemy.url", url)
+    cfg.set_main_option(
+        "script_location",
+        str(Path(ALEMBIC_INI).parent / "kitepilot_api" / "db" / "migrations"),
+    )
     if cmd == "up":
         command.upgrade(cfg, "head")
     elif cmd == "down":
