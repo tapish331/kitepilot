@@ -28,7 +28,7 @@ def test_minute_snapshot():
     agg = Aggregator(on_bar_1m=bars.append)
     start = datetime(2024, 1, 1, 0, 0, 0, tzinfo=UTC)
     price = 100.0
-    r = random.Random(42)
+    r = random.Random(42)  # nosec B311 - deterministic test fixture
     for i in range(60):
         price += r.uniform(-1, 1)
         agg.ingest(tick(start + timedelta(seconds=i), price))

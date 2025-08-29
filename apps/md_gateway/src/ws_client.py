@@ -13,7 +13,7 @@ async def simulated_ticks(
     symbols: Iterable[str], *, seed: int, seconds: int | None = None, realtime: bool = True
 ) -> AsyncIterator[Tick]:
     """Deterministic synthetic tick stream."""
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # nosec B311 - non-crypto PRNG used for deterministic simulation
     prices = {s: Decimal(100 + i * 10) for i, s in enumerate(symbols)}
     start = asyncio.get_event_loop().time()
     symbols_list: List[str] = list(symbols)
