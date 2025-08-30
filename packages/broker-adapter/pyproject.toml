@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kitepilot-broker-adapter"
+version = "0.1.0"
+description = "Broker adapter base and Zerodha client skeleton for Kitepilot"
+requires-python = ">=3.11"
+authors = [{name = "Kitepilot"}]
+dependencies = [
+  "pydantic>=2.7",
+  "typing-extensions>=4.8"
+]
+
+[tool.mypy]
+strict = true
+packages = ["kitepilot_broker"]
+
+[tool.ruff]
+line-length = 100

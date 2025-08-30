@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Conventional Commits.
 
+## [Unreleased]
+
+### Added
+
+- broker adapter base package with Zerodha client skeleton.
+- broker-svc FastAPI app with idempotent order endpoints.
+- contract tests covering adapter mapping and API idempotency.
+
 ## [0.0.0] - 2025-08-29
 
 ### Added
