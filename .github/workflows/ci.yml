@@ -51,8 +51,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e apps/api[dev]
-      - name: mypy (apps/api)
-        run: mypy apps/api
+          pip install -e packages/feature-lib
+      - name: mypy (apps/api & feature-lib)
+        run: |
+          mypy apps/api
+          mypy packages/feature-lib
 
   build:
     name: build
@@ -112,9 +115,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e packages/common
           pip install -e apps/api[dev]
+          pip install -e packages/feature-lib
       - name: pytest (packages and api)
         run: |
           pytest -q packages/common packages/common/tests
+          pytest -q packages/feature-lib/tests
           pytest -q apps/api/tests/unit
   integration_tests:
     name: integration_tests
