@@ -163,9 +163,10 @@ jobs:
           python-version: '3.11'
       - name: Install packages
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip wheel
           pip install -e packages/broker-adapter
           pip install -e apps/broker-svc
+          pip install pytest pytest-cov
       - name: Run contract tests
         run: |
           pytest -q packages/broker-adapter/tests/contract
