@@ -62,7 +62,7 @@ jobs:
           mypy packages/strategy-kit
           mypy packages/risk-lib/kitepilot_risk
           mypy apps/risk-svc/src
-          ruff packages/risk-lib apps/risk-svc
+          ruff check packages/common packages/feature-lib packages/strategy-kit packages/risk-lib apps/api apps/risk-svc
 
   build:
     name: build
