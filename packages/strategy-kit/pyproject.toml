@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "strategy-kit"
+version = "0.1.0"
+description = "Strategy interfaces and utilities for Kitepilot"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name="Kitepilot"}]
+license = {text = "Apache-2.0"}
+dependencies = [
+  "pydantic>=2.7,<3",
+]
+
+[tool.hatch.build]
+packages = ["src/strategy_kit"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["strategy_kit"]
