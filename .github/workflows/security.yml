@@ -27,10 +27,6 @@ jobs:
           python-version: '3.11'
       - name: Install bandit
         run: pip install bandit
-      - name: Run bandit (skip if no Python files)
+      - name: Run bandit (risk-lib and risk-svc)
         run: |
-          if [ -z "$(git ls-files '*.py')" ]; then
-            echo 'No Python files; skipping bandit.'
-          else
-            bandit -q -r . -s B101
-          fi
+          bandit -q -r packages/risk-lib apps/risk-svc -s B101

@@ -53,11 +53,16 @@ jobs:
           pip install -e apps/api[dev]
           pip install -e packages/feature-lib
           pip install -e packages/strategy-kit
+          pip install -e packages/risk-lib[dev]
+          pip install -e apps/risk-svc[dev]
       - name: mypy (apps/api, feature-lib & strategy-kit)
         run: |
           mypy apps/api
           mypy packages/feature-lib
           mypy packages/strategy-kit
+          mypy packages/risk-lib/kitepilot_risk
+          mypy apps/risk-svc/src
+          ruff check packages/common packages/feature-lib packages/strategy-kit packages/risk-lib apps/api apps/risk-svc
 
   build:
     name: build
@@ -119,12 +124,16 @@ jobs:
           pip install -e apps/api[dev]
           pip install -e packages/feature-lib
           pip install -e packages/strategy-kit
+          pip install -e packages/risk-lib[dev]
+          pip install -e apps/risk-svc[dev]
       - name: pytest (packages and api)
         run: |
           pytest -q packages/common packages/common/tests
           pytest -q packages/feature-lib/tests
           pytest -q packages/strategy-kit/tests
           pytest -q apps/api/tests/unit
+          pytest -q packages/risk-lib/tests
+          pytest -q apps/risk-svc/tests
   integration_tests:
     name: integration_tests
     runs-on: ubuntu-latest
