@@ -15,3 +15,5 @@ The format is based on Keep a Changelog, and this project adheres to Conventiona
 ### Added
 
 - md-gateway app with simulated ticks and 1s/1m bar aggregation.
+
+### 2025-08-29 – T07: Feature library — Adds price/microstructure/volatility features with tests and docs.

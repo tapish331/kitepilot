@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kitepilot-features"
+version = "0.1.0"
+description = "Core feature computation library for price, microstructure, volatility, and seasonality"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "Kitepilot"}]
+license = {text = "Apache-2.0"}
+dependencies = [
+  "pandas>=2.0,<3",
+  "numpy>=1.24,<2",
+  "pandas-stubs>=2.0.0",
+]
+
+[tool.hatch.build]
+packages = ["kitepilot_features"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["kitepilot_features"]
+ignore_missing_imports = true
