@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kitepilot-risk"
+version = "0.1.0"
+description = "Reusable risk policy and rules engine for Kitepilot"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name="Kitepilot"}]
+license = { text = "Apache-2.0" }
+keywords = ["trading", "risk", "pydantic"]
+dependencies = [
+  "pydantic>=2.7,<3",
+  "typing-extensions>=4.10",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "hypothesis>=6.99",
+  "freezegun>=1.4",
+  "mypy>=1.10",
+  "ruff>=0.5",
+]
+
+[tool.hatch.build]
+packages = ["kitepilot_risk"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+select = ["E","F","I","B","UP","PL"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["kitepilot_risk"]

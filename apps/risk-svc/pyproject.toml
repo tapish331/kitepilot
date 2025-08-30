@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kitepilot-risk-svc"
+version = "0.1.0"
+description = "FastAPI service exposing risk evaluation endpoints"
+requires-python = ">=3.11"
+authors = [{ name = "KitePilot" }]
+readme = "README.md"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.30",
+  "pydantic>=2.7",
+  "kitepilot-risk",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "httpx>=0.27",
+  "freezegun>=1.4",
+  "mypy>=1.10",
+  "ruff>=0.5",
+]
+
+[tool.setuptools]
+packages = { find = { where = ["src"] } }
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+select = ["E","F","I","B","UP","PL"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["risk_svc"]

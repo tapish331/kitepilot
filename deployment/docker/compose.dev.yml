@@ -1,0 +1,6 @@
+version: '3'
+services:
+  risk-svc:
+    build: ../../apps/risk-svc
+    ports:
+      - "8003:8000"
