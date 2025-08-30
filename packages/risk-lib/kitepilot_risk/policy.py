@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Set
 
 from pydantic import BaseModel, Field
 
@@ -24,7 +23,7 @@ class Toggles(BaseModel):
 
 
 class Lists(BaseModel):
-    instrument_banlist: Set[str] = Field(default_factory=set)
+    instrument_banlist: set[str] = Field(default_factory=set)
 
 
 class Policy(BaseModel):

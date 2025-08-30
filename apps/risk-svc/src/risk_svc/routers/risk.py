@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
-
 from kitepilot_risk import OrderIntent, Policy, evaluate_order
 
 from ..policy_store import PolicyStore
@@ -29,7 +28,7 @@ def get_router(store: PolicyStore, state: StateProvider) -> APIRouter:
         try:
             store.set(policy)
         except PermissionError as exc:
-            raise HTTPException(status_code=403, detail=str(exc))
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
         return {"status": "ok"}
 
     @router.post("/kill")
@@ -43,3 +42,4 @@ def get_router(store: PolicyStore, state: StateProvider) -> APIRouter:
         return state.snapshot()
 
     return router
+

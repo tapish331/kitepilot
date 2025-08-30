@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from typing import Any, Callable
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -49,7 +50,7 @@ def rule_opening_block(policy: Policy, state: AccountState, intent: OrderIntent)
     block = policy.toggles.opening_minutes_block
     if not block:
         return _ok()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     market_open = now.replace(hour=9, minute=15, second=0, microsecond=0)
     if now < market_open + timedelta(minutes=block):
         return False, OPENING_BLOCK, {"minutes": block}
@@ -102,7 +103,7 @@ def rule_throttle(policy: Policy, state: AccountState, intent: OrderIntent):
     if window is None:
         return _ok()
     last = state.last_order_ts_by_symbol.get(intent.symbol)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if last and (now - last).total_seconds() < float(window):
         return False, THROTTLED, {"wait": str(window)}
     return _ok()

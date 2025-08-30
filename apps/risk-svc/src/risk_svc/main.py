@@ -3,8 +3,8 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from .policy_store import PolicyStore
-from .state_provider import StateProvider
 from .routers.risk import get_router
+from .state_provider import StateProvider
 
 
 def create_app() -> FastAPI:
@@ -21,3 +21,4 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+

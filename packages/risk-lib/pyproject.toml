@@ -27,6 +27,7 @@ dev = [
 
 [tool.hatch.build]
 packages = ["kitepilot_risk"]
+include = ["kitepilot_risk/py.typed"]
 
 [tool.black]
 line-length = 100

@@ -6,3 +6,6 @@ trading orders against pre-trade risk controls.
 This library is intentionally framework agnostic and relies only on Pydantic
 for type-safe models. It is consumed by the `risk-svc` FastAPI application and
 the backtester.
+
+This package ships a PEP 561 `py.typed` marker so static type checkers can
+verify projects that depend on it.
